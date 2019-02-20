@@ -71,7 +71,7 @@ To use a kubernetes pod, you need to:
 ### Creating a Dockerfile
 
 If you are new to docker, have a look at this very simple 
-[Dockerfile](). 
+[Dockerfile](https://github.com/kcyu2014/cvlab-kubernetes/blob/master/templates/docker/simple/Dockerfile). 
 You should guess what is happening and add your own config.
 
 Put your gaspar id after `NB_USER=` and your uid after `NB_UID=`.\
@@ -115,9 +115,9 @@ docker push ic-registry.epfl.ch/cvlab/<your-tag>
 
 ### Dockerfile Templates
 Here we provide a set of templates for most deep learning frameworks that most people use.
-- [Matlab with MatConvNet]()
-- [PyTorch]()
-- [TensorFlow]()
+- [Matlab with MatConvNet](https://github.com/kcyu2014/cvlab-kubernetes/tree/master/templates/docker/matlab)
+- [PyTorch](https://github.com/kcyu2014/cvlab-kubernetes/tree/master/templates/docker/pytorch)
+- [TensorFlow(TODO)]()
 
 
 ## Kubernetes
