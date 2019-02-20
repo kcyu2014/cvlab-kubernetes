@@ -2,6 +2,9 @@
 EPFL CVLab Kubernetes tutorials with true training examples 🤩
 
 [TODO]
+Install kubernetes
+* Cite the MLO one.
+
 
 ## Docker part of this.
 1. Docker image examples. with correct User permissions.
