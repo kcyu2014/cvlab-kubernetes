@@ -159,27 +159,123 @@ In this config file,
 
   _The resource will be automatically freed once the command has run. The pod gets status `Completed` but is not deleted._
 
-[TODO]
-1. Creation of pods.
-- A linux pod
-- With GPU
-- With GPU and libraries ??
+### Creating a pod from file
+Go to the directory where your kubernetes config file is and run:
+```bash
+kubectl create -f <your-configfile-name>.yaml
+```
 
-2. Run pod in a correct way
-  - Do not use **sleep and infinity**
-  - Try to debug locally and then deploy
-  - Deploy command examples
-  ```bash
-  ['python', ... ]
-  ```
+### Checking pods status
+```bash
+kubectl get pods  # get all pods
+kubectl get pods -l user=<user>  # filter by label (defined in the config file)
+kubectl get pod <user>-pod  # get by pod name
+```
 
-3. introduction to kubenetes Job
+### SSH to a pod
+```bash
+kubectl exec -it <user>-pod /bin/bash
+```
+
+### Deleting a pod
+```
+kubectl delete pod <user>-pod
+```
+
+### Getting information on a pod
+Useful for debugging
+```bash
+kubectl describe pod <user>-pod
+kubectl get pod <user>-pod -o yaml
+kubectl logs <user>-pod
+```
+
+### Note on Storage across icclusters
+#### (`mounting /cvlab-container-scratch`)
+
+Follow the instructions in `Kubernetes basics`, and use
+```yaml
+volumeMounts:
+- mountPath: /scratch
+   name: mlo-scratch
+   subPath: YOUR_USERNAME
+```
+
+and
+
+```yaml
+volumes:
+- name: mlo-scratch
+   persistentVolumeClaim:
+   claimName: mlo-scratch
+```
+#### (`mounting /cvlabdata1 or /cvlabdata2`)
+
+This is how you can mount your home folder into a Pod. 
+```yaml
+spec:
+  volumes:
+  - name: cvlabdata1
+    persistentVolumeClaim:
+      claimName: pv-cvlabdata1
+  containers:
+  - name:  ubuntu
+    volumeMounts:
+    - mountPath: /cvlabdata1
+      name: cvlabdata1
+    - mountPath: /home/<user>
+      name: cvlabdata1
+      subPath: home/<user>
+```
+
+
+###[TODO] Introduction of k8s Job 
  - Yaml Job config
  - Create multiple jobs with hyper-parameter changing with help of `Jinja2`.
   
+## Example project
+Please refer to [this project](https://c4science.ch/diffusion/7471/) for source code.
+You will pay attention to `kubernetes` folder.
+
+Here we prepare an example project, to show how to adapt an old project into k8s. 
+#### Step 1. Prepare the docker image.
+- Choose from [templates](#dockerfile-templates) based on your platform.
+- Adapt the file to add those packages your project requires
+    - it usually can be found in `requirements.txt`
+- Build image and push to `ic-registry.epfl.ch`. 
+
+#### Step 2. Write the yaml file to simulate server environment.
+Check [this yaml file](https://c4science.ch/diffusion/7471/browse/master/kubernetes/test_handseg.yml)
+to see how it is done.
+- Mount your folder on `cvlabdata1` or `cvlabdata2`. Check `volumes` and `volumeMounts`.
+- Change `WorkDir` to where you start training.
+- Change the command from `sleep infinite` to `['python', 'train.py']` to run your training.
+
+#### Step 3. Start training! 
+Just run 
+```bash
+kubectl create -f test_handseg.yml
+```
+
+#### Step 4. Monitoring the training process.
+Because you mount the `cvlabdata` volume into the pod, so the training should be as if it run from our old servers. 
+Ideally, you can use whatever you develop to monitor the training.
+- If you use Tensorboard, just do what you did before. Running on k8s does not introduce any difference.
+- If you monitor only through `stdout`, you need to run the following command
+```yaml
+command: ['/bin/bash', '-c']
+args: ['python something.py -args... > logs/debug-run-1.txt']
+```
+
+#### Step 5. Finish
+If the training finished, the pod will be marked as `complete` status and the resources will be automatically released.
+
+To check status, just run `kubectl get pods` to see if your pod is completed or not. 
+Please refer to [using kubernetes](#checking-pods-status) for more information.
+
+
 
 ## Training-FAQs
-
 Q1. How do I use Tensorboard/Visdom/ .... to monitor my training if I cannot access it like a normal server?
 
 > Check the examples in <WILL ADD LATER>.
@@ -188,11 +284,8 @@ Q2. How do I **debug** if I cannot use `sleep infinite`?
 
 > Solution 1: Debug on normal server and then deploy.
  
-> Solution 2: print your logs into file so that you can check debugging message there.
-```yaml
-command: ['/bin/bash', '-c']
-args: ['python something.py -args... > logs/debug-run-1.txt']
-```
+> Solution 2: Redirect `stdout` or `stderr` into file, so that you can check debugging message there.
+Please refer to [Monitoring training process](#step-4-monitoring-the-training-process) for more information. 
 
 Q3. How can I run with PyCharm debugger?
  
