@@ -125,7 +125,7 @@ Here we provide a set of templates for most deep learning frameworks that most p
 ### Creating a kubernetes config file
 Have a look at (and download) this simple [kubernetes config file](https://github.com/epfml/kubernetes-setup/blob/master/templates/pod-simple/pod-gpu-mlodata.yaml).
 Fill all elements that are in \<brackets\> .\
-`<your-pod-name>` needs not be the same as `<your-docker-image-tag>` but again it is good practice to put your name first for the pod name, for example `jaggi-pod`.
+`<your-pod-name>` needs not be the same as `<your-docker-image-tag>` but again it is good practice to put your name first for the pod name, for example `<user>-pod`.
 
 In this config file,
  - you can change: `nvidia.com/gpu: 1` to request more gpus
@@ -197,7 +197,7 @@ Follow the instructions in `Kubernetes basics`, and use
 ```yaml
 volumeMounts:
 - mountPath: /scratch
-   name: mlo-scratch
+   name: cvlab-scratch
    subPath: YOUR_USERNAME
 ```
 
@@ -205,9 +205,9 @@ and
 
 ```yaml
 volumes:
-- name: mlo-scratch
+- name: cvlab-scratch
    persistentVolumeClaim:
-   claimName: mlo-scratch
+   claimName: cvlab-scratch
 ```
 #### (`mounting /cvlabdata1 or /cvlabdata2`)
 
