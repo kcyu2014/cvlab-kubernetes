@@ -1,4 +1,4 @@
-# cvlab-kubernetes
+# CVLab Kubernetes Tutorials
 EPFL CVLab Kubernetes tutorials with true training examples 🤩
 
 [TODO]
