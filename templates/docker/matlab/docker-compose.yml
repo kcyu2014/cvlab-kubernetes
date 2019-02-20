@@ -1,0 +1,12 @@
+version: '2'
+services:
+    mlo_ml:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image:  ntxvm015.iccluster.epfl.ch/cvlab-k8s-master/tfpod:1.0
+    mlo_ml_prod:
+        build:
+            context: .
+            dockerfile: Dockerfile.prod
+        image:  ntxvm015.iccluster.epfl.ch/cvlab-k8s-master/tfpod:1.0
