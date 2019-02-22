@@ -293,7 +293,7 @@ It's possible but quite dirty solution. It requires the SSH enabled pod. Ideally
 is for people to **deploy but not debugging**, so if you need to debug densely, please use 
 those old servers and let k8s only for training.  
 
-4. How do I stop other people eating all the resources?
+Q4. How do I stop other people eating all the resources?
 
 > Victor: Wall of shame. If three strike on the WoS, no GPU for 2 weeks.
 
@@ -301,6 +301,10 @@ those old servers and let k8s only for training.
 
 > Vidit: Trust the humanity.
 
+Q5. How many GPUs are available?
+
+Query for the GPUs allocated and used in cvlab namespace.  
+`kubectl describe quota --namespace=cvlab`
 
 
 # Maintainer and Acknowledgement
