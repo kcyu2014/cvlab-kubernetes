@@ -8,15 +8,23 @@ If you are interested to read how k8s works, please read this.
 [Kubernetes 101: Basic ideas.](https://medium.com/google-cloud/kubernetes-101-pods-nodes-containers-and-clusters-c1509e409e16)
  
 ### Table of contents:
-* [Prerequisites](##Prerequisite)
-* [Introduction to docker and build your own image](##Docker-image)
-* [How to design your k8s yaml config](##Kubernetes)
-* [Example project: Step-by-step transition to k8s](##Example-Project) 
-* [Training FAQs: Please read this before deploying jobs](##Training-FAQs)
+#### Basics
+* [Prerequisites](#prerequisite)
+* [Introduction to docker and build your own image](#docker-image)
+* [How to design your k8s yaml config](#kubernetes) 
+* [Training FAQs: Please read this before deploying jobs](#training-faqs)
+* [(TODO) Introduction to k8s Jobs.]()
 
-Some useful sections: 
-- [Dockerfile Templates]()
-- [Kubernetes Templates]()
+#### Examples and templates
+
+These are commonly used reference to help people to use docker and k8s.
+
+* [Example project: Step-by-step transition to k8s](#example-project)
+* [Dockerfile Templates](#dockerfile-templates)
+* [Docker cheat sheet]()
+* [Kubernetes Templates](https://github.com/kcyu2014/cvlab-kubernetes/tree/master/templates/kubernetes)
+* [Kubernetes common commands](#common-kubernetes-commands)
+
 
 ## Prerequisite
 ### 1. Install kubernetes
@@ -65,7 +73,7 @@ To use a kubernetes pod, you need to:
  - [Build a Docker image](#building-a-docker-image)
  - [Push the docker image to ic-registry.epfl.ch/cvlab/](#pushing-the-docker-image)
  - [Create a kubernetes config file](#creating-a-kubernetes-config-file)
- - [Dockerfile Templates](#Dockerfile-Templates)
+ - [Dockerfile Templates](#dockerfile-templates)
  
  
 ### Creating a Dockerfile
@@ -119,6 +127,11 @@ Here we provide a set of templates for most deep learning frameworks that most p
 - [PyTorch](https://github.com/kcyu2014/cvlab-kubernetes/tree/master/templates/docker/pytorch)
 - [TensorFlow(TODO)]()
 
+### Common problems when using DockerImage from outside.
+
+- Q1. What happened if you encounter `No permission to write...`
+
+Take a look at 
 
 ## Kubernetes
 
@@ -132,8 +145,10 @@ In this config file,
  - you can see at the end that mlodata1 is mounted. You can remove it or change it for mloscratch
  - you specify which command is run when launching the pod. Here it will sleep for 60 seconds and then stop
  
- #### Commands
+ #### Pod command, where the game begins.
 
+`command:` in the `YAML` file is the starting point of your kubernetes configuration.
+ 
 - To have a container run forever (for debugging purpose), you can use:
    ```yaml
    command: [sleep, infinity]
@@ -149,46 +164,77 @@ In this config file,
    command: ["/bin/bash", "-c"]
    args: ["command1; command2 && command3"]
   ```
-  OR directly run python command from Working DIR.
-  
   For example:
+  
   ```yaml
    command: ["/bin/bash", "-c"]
    args: ["cd /cvlabdata1/home/kyu && python automl.py"]
   ```
 
+ - Directly run python command from Working DIR.
+  ```yaml
+  command: ["python",
+            "<your-training>.py",
+            "--arg1=<something>",
+            "--arg2=<something>",
+            ... 
+            ]
+  ```
+  It is equal as the following command in normal server:
+  ```bash
+  python <your-training>.py --arg1=<something> --arg2=<something> ...
+  ```
+  
+  
   _The resource will be automatically freed once the command has run. The pod gets status `Completed` but is not deleted._
 
-### Creating a pod from file
-Go to the directory where your kubernetes config file is and run:
-```bash
-kubectl create -f <your-configfile-name>.yaml
-```
+### Common kubernetes commands
+> Please refer to [kubernetes cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/) for more information.
 
-### Checking pods status
-```bash
-kubectl get pods  # get all pods
-kubectl get pods -l user=<user>  # filter by label (defined in the config file)
-kubectl get pod <user>-pod  # get by pod name
-```
+- Go to the directory where your kubernetes config file is and run:
+    ```bash
+    kubectl create -f <your-configfile-name>.yaml
+    ```
 
-### SSH to a pod
-```bash
-kubectl exec -it <user>-pod /bin/bash
-```
+- Checking pods status
+    ```bash
+    kubectl get pods  # get all pods
+    kubectl get pods -l user=<user>  # filter by label (defined in the config file)
+    kubectl get pod <user>-pod  # get by pod name
+    ```
 
-### Deleting a pod
-```
-kubectl delete pod <user>-pod
-```
+- Login to a pod as bash
+    ```bash
+    kubectl exec -it <user>-pod /bin/bash
+    ```
 
-### Getting information on a pod
-Useful for debugging
-```bash
-kubectl describe pod <user>-pod
-kubectl get pod <user>-pod -o yaml
-kubectl logs <user>-pod
-```
+- Deleting a pod by either pod-name or filename
+   ```bash
+   # Delete by name
+   kubectl delete pod <user-pod-name>
+   # OR delete by file
+   kubectl delete -f <your-configfile-name>.yaml
+   ```
+   
+
+- Getting information on a pod
+    Useful for debugging
+    ```bash
+    kubectl describe pod <user>-pod
+    kubectl get pod <user>-pod -o yaml
+    kubectl logs <user>-pod
+    ```
+- Check current GPU quota  
+    ```bash
+    kubectl describe quota --namespace=cvlab
+    ```
+    
+- Describe pod by name
+    ```bash
+    kubectl describe pod <pod-name>
+    ```
+
+
 
 ### Note on Storage across icclusters
 #### (`mounting /cvlab-container-scratch`)
