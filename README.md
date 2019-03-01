@@ -13,7 +13,7 @@ If you are interested to read how k8s works, please read this.
 * [Introduction to docker and build your own image](#docker-image)
 * [How to design your k8s yaml config](#kubernetes) 
 * [Training FAQs: Please read this before deploying jobs](#training-faqs)
-* [(TODO) Introduction to k8s Jobs.]()
+* [Introduction to k8s Jobs. (TODO)]()
 
 #### Examples and templates
 
@@ -21,7 +21,7 @@ These are commonly used reference to help people to use docker and k8s.
 
 * [Example project: Step-by-step transition to k8s](#example-project)
 * [Dockerfile Templates](#dockerfile-templates)
-* [Docker cheat sheet]()
+* [Docker cheat sheet (TODO)]()
 * [Kubernetes Templates](https://github.com/kcyu2014/cvlab-kubernetes/tree/master/templates/kubernetes)
 * [Kubernetes common commands](#common-kubernetes-commands)
 
@@ -234,6 +234,11 @@ In this config file,
     kubectl describe pod <pod-name>
     ```
 
+- Get standard output and error message from a pod
+ ```bash
+ kubectl log <pod-name>
+ ```
+ 
 
 
 ### Note on Storage across icclusters
@@ -352,6 +357,22 @@ Q5. How many GPUs are available?
 Query for the GPUs allocated and used in cvlab namespace.  
 `kubectl describe quota --namespace=cvlab`
 
+Q6. What's error with Pytorch Dataloader `RuntimeError: DataLoader worker (pid <ID>) is killed by signal: Bus error.`
+
+It is because the shared memory is not enough. Create a empty folder and mount to shared memory in Linux.
+Please refer to this file. Pay attention to 
+```yaml
+ volumeMounts:
+   - mountPath: /dev/shm
+     name: dshm
+ # other mounts... 
+ volumes:
+ - name: dshm
+   emptyDir:
+     medium: Memory
+     sizeLimit: 8Gi # 8G shared memory allocated from memory.
+ # other volumes claim ...
+```
 
 # Maintainer and Acknowledgement
 Maintainer: Kaicheng, Vidit.
