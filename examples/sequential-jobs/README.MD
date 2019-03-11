@@ -1,12 +1,14 @@
 # Sequential Job Tutorial
 
 # TODO list
-1. 
+1. [important] How to get logs if pod is error
+2. Furnish the job template
+3. test if the template works.
 
 ## FAQ
 
 
-
+### supported format
 ```yaml
 # Command to run
 
@@ -30,3 +32,7 @@ args:
 - cc=dd 
 # ...
 ```
+
+### log is not working properly.
+
+If you cannot see python `print` in this command, `kubectl logs`, try setting `PYTHONUNBUFFERED=0`

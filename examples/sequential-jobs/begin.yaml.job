@@ -4,7 +4,7 @@ metadata:
   labels:
     runUser: kyu
     user: kyu
-  name: kyu-debug-sequential-test-3
+  name: kyu-debug-sequential-test-2
 spec:
   template:
     metadata:
@@ -19,12 +19,8 @@ spec:
         name: job-done
       initContainers:
       - args:
-        - for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;
+        - timeout -k 180 0.1h sh prinaat.sh ; exit 0;
         command:
-        - timeout
-        - -k
-        - '180'
-        - 0.001h
         - /bin/bash
         - -c
         env:
@@ -36,7 +32,37 @@ spec:
         name: job-1
         resources:
           limits:
-            nvidia.com/gpu: 1
+            nvidia.com/gpu: 0
+          requests:
+            memory: 12Gi
+        volumeMounts:
+        - mountPath: /cvlabdata1
+          name: cvlabdata1
+        - mountPath: /cvlabdata2
+          name: cvlabdata2
+        - mountPath: /home/kyu
+          name: cvlabdata2
+          subPath: home/kyu
+        - mountPath: /dev/shm
+          name: dshm
+        - mountPath: /cvlabsrc1
+          name: cvlabsrc1
+        workingDir: /home/kyu/.pycharm/foso
+      - args:
+        - timeout -k 180 0.1h sh prinaat.sh ; exit 0;
+        command:
+        - /bin/bash
+        - -c
+        env:
+        - name: HOME
+          value: /home/kyu
+        - name: PYTHONPATH
+          value: /home/kyu/.pycharm/foso:/home/kyu/.pycharm/foso/source:$PYTHONPATH
+        image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
+        name: job-2
+        resources:
+          limits:
+            nvidia.com/gpu: 0
           requests:
             memory: 12Gi
         volumeMounts:

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: kyu-debug-sh-sequential-6
+  name: kyu-debug-sh-sequential-normal-pod-2
   labels:
     user: kyu
 spec:
@@ -10,33 +10,39 @@ spec:
     runAsUser: 168151
     fsGroup: 11169
   containers:
-  - args:
-      - sh
-      - for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;
-    command:
-    - timeout
-    - -k
-    - "180"
-    - 0.001h
-    - /bin/bash
-    - -c
-    name:  kyu-pytorch-imagenet-gpu
+  - name:  kyu-pytorch-imagenet-gpu
     image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
 #    command: ['/bin/bash', '-c']
 #    args: ['for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;']
 #    args: ['python', 'test.py']
-
-
 #    args: ['for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;']
-#    args:
-#      - python
-#      - test.py
+#  - args:
+    command:
+      - /bin/bash
+      - -c
+    args:
+      - "timeout -k 180 0.01h python test.py; if [ $? -eq 124 || $? -eq 137 ]; then exit 0; else exit $?; fi"
+#    - timeout
+#    - -k
+#    - "180"
+#    - 0.01h
+#    - /bin/bash
+#    - print.sh
+#    - /bin/bash
+#    - -c
+#    - python
+#    - test.py
+#    - ;
+#    - exit
+#    - "0"
+#    - 1&2>test_log.txt
+#    command: ['python', 'test.py']
 #    command:
-#      - sleep
-#      - infinity
+#    - sleep
+#    - infinity
     resources:
       limits:
-        nvidia.com/gpu: 1 # requesting 1 GPU
+        nvidia.com/gpu: 0 # requesting 1 GPU
       requests:
         memory: 12Gi
     workingDir: /home/kyu/.pycharm/foso
@@ -45,6 +51,8 @@ spec:
         value: /home/kyu
       - name: PYTHONPATH
         value: /home/kyu/.pycharm/foso:/home/kyu/.pycharm/foso/source:$PYTHONPATH
+      - name: PYTHONUNBUFFERED
+        value: "0"
     volumeMounts:
       - mountPath: /cvlabdata1
         name: cvlabdata1

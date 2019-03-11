@@ -23,6 +23,13 @@ parser.add_argument('--run_interval', type=float, required=False, default=3.0,
 parser.add_argument('--num_runs', type=int, required=False, default=1,
                     help='Number of runs ')
 
+def merge_list_str(l_str):
+    a = ''
+    for i in l_str:
+        a += i + ' '
+
+    return a
+
 
 def read_yaml_file(f_path):
     with open(f_path, 'r') as f:
@@ -66,10 +73,20 @@ def process_yaml_pod(config, args):
         raise ValueError("You shall not submit sleep infinity pod here. "
                          "Please run your script or, e.g., python train.py instead")
 
-    new_container['command'] = ['timeout', '-k', str(KILL_BUFFER_TIME),
-                                str(args.runtime) + 'h'] + \
-                               new_container['command']
+    if 'args' in new_container.keys():
+        combine_cmds = new_container['command'] + new_container['args']
+    else:
+        combine_cmds = new_container['command']
 
+    new_container['command'] = ['/bin/bash', '-c']
+    cmd_tmout = f'timeout -k {KILL_BUFFER_TIME} {args.runtime}h '
+
+    # new_container['command'] = ['timeout', '-k', str(KILL_BUFFER_TIME),
+    #                             str(args.runtime) + 'h']
+    assert combine_cmds[0] in ['python', 'sh'], "Your args should begin with 'sh' or 'python' "
+    cmd_to_run = merge_list_str(combine_cmds)
+    new_container['args'] = [cmd_tmout + cmd_to_run +
+                             '; if [ $? -eq 124 || $? -eq 137 ]; then exit 0; else exit $?; fi']
     num_runs = args.num_runs
 
     # overwrite job template accordingly.
