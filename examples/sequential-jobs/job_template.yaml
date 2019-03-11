@@ -1,0 +1,34 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sequential-jobs-run1
+spec:
+  template:
+    metadata:
+      name: sequential-job
+    spec:
+      initContainers:
+      - name: job-1
+        image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
+        command: ['sh', '-c', 'for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;']
+        resources:
+          limits:
+            nvidia.com/gpu: 1 # requesting 1 GPU
+      - name: job-2
+        image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
+        command: ['sh', '-c', 'for i in 1 2 3; do echo "job-2 `date`" && sleep 5s; done;']
+        resources:
+          limits:
+            nvidia.com/gpu: 1 # requesting 1 GPU
+      - name: job-3
+        image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
+        command: ['sh', '-c', 'for i in 1 2 3; do echo "job-2 `date`" && sleep 5s; done;']
+        resources:
+          limits:
+            nvidia.com/gpu: 1 # requesting 1 GPU
+      containers:
+      - name: job-done
+        image: ic-registry.epfl.ch/cvlab/ubuntu:18.04
+        command: ['sh', '-c', 'echo "jobs completed"']
+      restartPolicy: Never

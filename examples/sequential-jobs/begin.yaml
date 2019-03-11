@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kyu-debug-sequential-test-1
+  labels:
+    user: kyu
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 168151
+    fsGroup: 11169
+  containers:
+  - name:  kyu-pytorch-imagenet-gpu
+    image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
+    command: ['/bin/bash', '-c']
+    args: ['for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;']
+#    args: ['python', 'test.py']
+#    args:
+#      - python
+#      - test.py
+#    command:
+#      - sleep
+#      - infinity
+    resources:
+      limits:
+        nvidia.com/gpu: 1 # requesting 1 GPU
+      requests:
+        memory: 12Gi
+    workingDir: /home/kyu/.pycharm/foso
+    env:
+      - name: HOME
+        value: /home/kyu
+      - name: PYTHONPATH
+        value: /home/kyu/.pycharm/foso:/home/kyu/.pycharm/foso/source:$PYTHONPATH
+    volumeMounts:
+      - mountPath: /cvlabdata1
+        name: cvlabdata1
+      - mountPath: /cvlabdata2
+        name: cvlabdata2
+      - mountPath: /home/kyu
+        name: cvlabdata2
+        subPath: home/kyu
+      - mountPath: /dev/shm
+        name: dshm
+      - mountPath: /cvlabsrc1
+        name: cvlabsrc1
+  volumes:
+    - name: cvlabdata2
+      persistentVolumeClaim:
+        claimName: pv-cvlabdata2
+    - name: cvlabdata1
+      persistentVolumeClaim:
+        claimName: pv-cvlabdata1
+    - name: dshm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 8Gi
+    - name: cvlabsrc1
+      persistentVolumeClaim:
+        claimName: pv-cvlabsrc1

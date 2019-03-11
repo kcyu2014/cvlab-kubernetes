@@ -17,7 +17,7 @@ spec:
       - "60"
     resources:
       limits:
-        nvidia.com/gpu: 1 # requesting 1 GPU
+        nvidia.com/gpu: 0 # requesting 1 GPU
     volumeMounts:
       - mountPath: /cvlabdata2
         name: cvlabdata2
@@ -25,3 +25,6 @@ spec:
     - name: cvlabdata2
       persistentVolumeClaim:
         claimName: pv-cvlabdata2
+    - name: cvlabsrc1
+      persistentVolumeClaim:
+        claimName: pv-cvlabsrc1
