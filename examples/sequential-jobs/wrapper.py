@@ -86,7 +86,10 @@ def process_yaml_pod(config, args):
     assert combine_cmds[0] in ['python', 'sh'], "Your args should begin with 'sh' or 'python' "
     cmd_to_run = merge_list_str(combine_cmds)
     new_container['args'] = [cmd_tmout + cmd_to_run +
-                             '; if [ $? -eq 124 || $? -eq 137 ]; then exit 0; else exit $?; fi']
+                             '; if [ $? -eq 124 ] || [ $? -eq 137 ]; '
+                             'then exit 0; '
+                             'else exit $?; '
+                             'fi']
     num_runs = args.num_runs
 
     # overwrite job template accordingly.

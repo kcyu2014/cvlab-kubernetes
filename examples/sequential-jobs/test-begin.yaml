@@ -21,7 +21,7 @@ spec:
       - /bin/bash
       - -c
     args:
-      - "timeout -k 180 0.01h python test.py; if [ $? -eq 124 || $? -eq 137 ]; then exit 0; else exit $?; fi"
+      - "timeout -k 180 0.01h python test.py; if [ $? -eq 124 ] || [ $? -eq 137 ]; then exit 0; else exit $?; fi"
 #    - timeout
 #    - -k
 #    - "180"
