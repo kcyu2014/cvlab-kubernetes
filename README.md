@@ -201,7 +201,11 @@ In this config file,
     kubectl get pods  # get all pods
     kubectl get pods -l user=<user>  # filter by label (defined in the config file)
     kubectl get pod <user>-pod  # get by pod name
+    # Only get Running or Error pod
+    kubectl get pods --field-selector=status.phase!=Succeeded 
     ```
+    
+
 
 - Login to a pod as bash
     ```bash
@@ -373,6 +377,15 @@ Please refer to this file. Pay attention to
      sizeLimit: 8Gi # 8G shared memory allocated from memory.
  # other volumes claim ...
 ```
+
+Q7. `kubectl get pods` return too many pods, what should I do?
+
+Check out this command from the [discussion](https://github.com/kubernetes/kubernetes/issues/49387). In short, you could do it byd 
+
+`kubectl get pods --field-selector=status.phase!=Succeeded`
+
+This will return those pods that are not succeeded. And it should be 
+much shorter. 
 
 # Maintainer and Acknowledgement
 Maintainer: Kaicheng, Vidit.
