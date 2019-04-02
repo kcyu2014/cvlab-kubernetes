@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: kyu-debug-sequential-test-2
+  name: kyu-debug-sequential-test-101
   labels:
     user: kyu
 spec:
   restartPolicy: Never
   securityContext:
     runAsUser: 168151
-    fsGroup: 11169
+    fsGroup: 60076
   containers:
   - name:  kyu-pytorch-imagenet-gpu
-    image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v0.1
+    image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v1.0.2
 #    command: ['/bin/bash', '-c']
 #    args: ['sh',
 #           'for i in 1 2 3; do echo "job-1 `date`" && sleep 5s; done;']
-    command: ['sh', 'prinaat.sh']
-#    command: ['python', 'test.py']
+#    command: ['/bin/bash', 'print.sh']
+    command: ['python', 'test.py']
 #    args:
 #      - python
 #      - test.py
@@ -32,6 +32,8 @@ spec:
     env:
       - name: HOME
         value: /home/kyu
+      - name: PYTHONUNBUFFERED
+        value: "0"
       - name: PYTHONPATH
         value: /home/kyu/.pycharm/foso:/home/kyu/.pycharm/foso/source:$PYTHONPATH
     volumeMounts:

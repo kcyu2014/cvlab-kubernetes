@@ -8,12 +8,16 @@ import yaml
 import copy
 import argparse
 
+REAL_PATH = os.path.realpath(os.path.dirname(__file__))
+
 KILL_BUFFER_TIME = 180  # 3 minute to force kill
 
-parser = argparse.ArgumentParser('Hello world')
+parser = argparse.ArgumentParser('Kubernetes sequential job wrapper')
 
 parser.add_argument('--f_path', type=str, required=True,
                     help="This is the file path to your .yaml.")
+parser.add_argument('--out_dir', type=str, required=False,
+                    help='This is the potential output directory.')
 parser.add_argument('--runtime', type=float, required=False, default=3.0,
                     help="This is time each run lasts. Default is 3 hours.")
 parser.add_argument('--uid', type=int, required=False, default=-1)
@@ -21,7 +25,7 @@ parser.add_argument('--username', type=str, required=False, default='')
 parser.add_argument('--run_interval', type=float, required=False, default=3.0,
                     help='deprecated.')
 parser.add_argument('--num_runs', type=int, required=False, default=1,
-                    help='Number of runs ')
+                    help='Number of runs. It should be print total of time.')
 
 def merge_list_str(l_str):
     a = ''
@@ -47,7 +51,7 @@ def handle_args(args):
 
 
 def obtain_job_template():
-    return read_yaml_file('job_template.yaml')
+    return read_yaml_file(os.path.join(REAL_PATH, 'job_template.yaml'))
 
 
 def process_yaml_pod(config, args):
@@ -73,22 +77,31 @@ def process_yaml_pod(config, args):
         raise ValueError("You shall not submit sleep infinity pod here. "
                          "Please run your script or, e.g., python train.py instead")
 
+
     if 'args' in new_container.keys():
         combine_cmds = new_container['command'] + new_container['args']
     else:
         combine_cmds = new_container['command']
 
-    new_container['command'] = ['/bin/bash', '-c']
-    cmd_tmout = f'timeout -k {KILL_BUFFER_TIME} {args.runtime}h '
+    if 'python' in combine_cmds[0]:
+        pass
+    elif 'sh' in combine_cmds[0]:
+        print(f"Executed command is {combine_cmds}")
+    else:
+        raise ValueError("Only support 'python' and '*sh' command")
 
+    new_container['command'] = ['/bin/bash', '-c']
+    timeout_cmd = f'timeout -k {KILL_BUFFER_TIME} {args.runtime}h '
+    print(f"Your program is wrapped with {timeout_cmd}")
     # new_container['command'] = ['timeout', '-k', str(KILL_BUFFER_TIME),
     #                             str(args.runtime) + 'h']
-    assert combine_cmds[0] in ['python', 'sh'], "Your args should begin with 'sh' or 'python' "
+
     cmd_to_run = merge_list_str(combine_cmds)
-    new_container['args'] = [cmd_tmout + cmd_to_run +
-                             '; if [ $? -eq 124 ] || [ $? -eq 137 ]; '
+    new_container['args'] = [timeout_cmd + cmd_to_run +
+                             '; ERC=$? ;'
+                             'if [ $ERC -eq 124 ] || [ $ERC -eq 137 ]; '
                              'then exit 0; '
-                             'else exit $?; '
+                             'else exit $ERC; '
                              'fi']
     num_runs = args.num_runs
 
@@ -113,6 +126,12 @@ def process_yaml_pod(config, args):
         j_cont = copy.deepcopy(new_container)
         j_cont['name'] = f'job-{i}'
         j_init.append(j_cont)
+
+        j_wait = copy.deepcopy(job_container[0])
+        j_wait['name'] = f'wait-{i}'
+        j_wait['command'] = ['sh', '-c']
+        j_wait['args'] = [f'for i in 1 2 3; do echo "job-{i} wait 10s" && sleep 10s; done;']
+        j_init.append(j_wait)
 
     # overwrite it again.
     job_config['spec']['template']['spec'] = j_spec
@@ -140,9 +159,11 @@ if __name__ == '__main__':
     dirname = os.path.dirname(f_path)
     basename = os.path.basename(f_path)
 
-    print(new_config)
+    # print(new_config)
     w_path = os.path.join(f_path + '.job')
+
     with open(w_path, 'w') as f:
-        print("Dumping the new config to " + w_path)
+        print("Dumping the new yaml to " + w_path)
         yaml.dump(new_config, f, default_flow_style=False)
+
 
