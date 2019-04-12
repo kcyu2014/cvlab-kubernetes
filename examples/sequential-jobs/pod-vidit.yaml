@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vidit-unet4logo-job
+  labels:
+    user: vidit
+spec:
+  restartPolicy: Never
+  securityContext:
+      runAsUser: 157873
+      fsGroup: 60076
+  containers:
+  - name:  ubuntu-gpu
+    image: ic-registry.epfl.ch/cvlab/vidit-simple:latest
+    workingDir: /cvlabdata2/home/vidit/unet4logo/
+    command: ["python3.6 train.py"]
+#    command:
+#      - sleep
+#      - infinity
+    resources:
+      limits:
+        nvidia.com/gpu: 1 # requesting 1 GPU
+
+    volumeMounts:
+      - mountPath: /cvlabdata1
+        name: cvlabdata1
+      - mountPath: /cvlabdata2
+        name: cvlabdata2
+      - mountPath: /cvlabsrc1
+        name: cvlabsrc1
+      - mountPath: /dev/shm
+        name: dshm
+
+  volumes:
+    - name: cvlabdata1
+      persistentVolumeClaim:
+        claimName: pv-cvlabdata1
+
+    - name: cvlabdata2
+      persistentVolumeClaim:
+        claimName: pv-cvlabdata2
+
+    - name: cvlabsrc1
+      persistentVolumeClaim:
+        claimName: pv-cvlabsrc1
+
+    - name: dshm
+      emptyDir:
+        medium: Memory

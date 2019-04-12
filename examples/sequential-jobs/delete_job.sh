@@ -9,8 +9,6 @@ LOGFILE=$TEMPDIR/jobs.log
 #echo $TEMPDIR
 
 FNAME=$1
-RUN_TIME=$2
-NUM_RUN=$3
 
 USERID=0
 #USERID=`id -u`
@@ -19,17 +17,13 @@ USER=`whoami`
 python ${TEMPDIR}/wrapper.py \
     --f_path=$FNAME \
     --out_dir=LOGDIR \
-    --runtime=$RUN_TIME \
-    --num_runs=$NUM_RUN \
     --username=$USER
-
-#    --uid=$USERID \
 
 # COPY the file to the new location.
 NEWPATH=${LOGDIR}/${USER}-${USERID}-$(basename $FNAME).job
 cp ${FNAME}.job $NEWPATH
 
-kubectl create -f ${NEWPATH}
+kubectl delete -f ${NEWPATH}
 
 DATE=$(date '+%d/%m/%Y %H:%M');
 echo "$DATE : job (basename $FNAME) created, with {$RUN_TIME}h for {$NUM_RUN} number of runs." >> $LOGFILE ;

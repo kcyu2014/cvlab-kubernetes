@@ -11,6 +11,8 @@ import argparse
 REAL_PATH = os.path.realpath(os.path.dirname(__file__))
 
 KILL_BUFFER_TIME = 180  # 3 minute to force kill
+SLEEP_TIME = 365
+
 
 parser = argparse.ArgumentParser('Kubernetes sequential job wrapper')
 
@@ -26,6 +28,9 @@ parser.add_argument('--run_interval', type=float, required=False, default=3.0,
                     help='deprecated.')
 parser.add_argument('--num_runs', type=int, required=False, default=1,
                     help='Number of runs. It should be print total of time.')
+# parser.add_argument('--delete', type=bool, action='store_true', dest='delete')
+# parser.set_defaults(delete=False)
+
 
 def merge_list_str(l_str):
     a = ''
@@ -130,7 +135,7 @@ def process_yaml_pod(config, args):
         j_wait = copy.deepcopy(job_container[0])
         j_wait['name'] = f'wait-{i}'
         j_wait['command'] = ['sh', '-c']
-        j_wait['args'] = [f'for i in 1 2 3; do echo "job-{i} wait 10s" && sleep 10s; done;']
+        j_wait['args'] = [f'for i in 1 2 3; do echo "job-{i} wait 10s" && sleep {SLEEP_TIME}s; done;']
         j_init.append(j_wait)
 
     # overwrite it again.

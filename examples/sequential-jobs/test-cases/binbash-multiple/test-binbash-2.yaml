@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: kyu-pytorch-cub-sequential-binbash-2
+  name: kyu-pytorch-cub-sequential-binbash-long-resnet101-2
   labels:
     user: kyu
 spec:
@@ -27,7 +27,7 @@ spec:
   - name:  kyu-pytorch-imagenet-gpu
     image: ic-registry.epfl.ch/cvlab/pytorch-imagenet:v1.0.2
     command: ['/bin/bash']
-    args: ['./bash/cub-debug-resume.sh', '31']
+    args: ['./bash/cub-debug-resume.sh', '2']
     resources:
       limits:
         cpu: 6
