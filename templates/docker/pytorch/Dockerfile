@@ -50,7 +50,6 @@ RUN pip install \
         visdom==0.1.1 \
         pydensecrf
 
-RUN chown $NB_USER:$NB_GID $CONDA_DIR
 #################################################
 
 
@@ -65,7 +64,8 @@ ENV SHELL=/bin/bash \
     NB_USER=<your-name> \
     NB_UID=<your-uid> \
     NB_GROUP=CVLAB-unit \
-    NB_GID=11166
+    NB_GID=11166 \
+    CONDA_DIR=<conda-path> remove this if you do not install conda
 #################################################
 
 ENV HOME=/home/$NB_USER
@@ -75,6 +75,7 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && \
     echo "${NB_USER}:${NB_USER}" | chpasswd && \
     usermod -aG sudo,adm,root ${NB_USER}
 RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME}
+RUN chown $NB_USER:$NB_GID $CONDA_DIR
 
 # The user gets passwordless sudo
 RUN echo "${NB_USER}   ALL = NOPASSWD: ALL" > /etc/sudoers
